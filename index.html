@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>30-Day Challenge</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0e0e0f;
+    --surface: #161618;
+    --surface2: #1e1e21;
+    --border: #2a2a2e;
+    --accent: #b8ff57;
+    --accent-dim: rgba(184,255,87,0.12);
+    --accent-mid: rgba(184,255,87,0.25);
+    --text: #f0f0ee;
+    --text-muted: #6b6b72;
+    --text-mid: #a0a0a8;
+    --danger: #ff5757;
+    --warn: #ffb347;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(14,14,15,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .header-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .header-title {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .day-badge {
+    font-family: 'Space Mono', monospace;
+    background: var(--accent);
+    color: #0e0e0f;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .progress-bar-wrap {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .progress-bar-bg {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+    transition: width 0.6s ease;
+  }
+  .progress-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 16px 24px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    padding: 8px 16px;
+    border-radius: 8px 8px 0 0;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .tab:hover:not(.active) { color: var(--text-mid); }
+
+  /* VIEWS */
+  .view { display: none; padding: 20px 24px; }
+  .view.active { display: block; }
+
+  /* TODAY VIEW */
+  .date-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .date-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .nav-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-mid);
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .date-display {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--text-mid);
+    min-width: 140px;
+    text-align: center;
+  }
+  .today-btn {
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-mid);
+    color: var(--accent);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: all 0.15s;
+  }
+  .today-btn:hover { background: var(--accent-mid); }
+
+  /* Completion ring */
+  .day-summary {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+  }
+  .ring-wrap { position: relative; width: 60px; height: 60px; flex-shrink: 0; }
+  .ring-wrap svg { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--border); stroke-width: 5; }
+  .ring-fg { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+  .ring-label {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .day-summary-text {}
+  .day-summary-title { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+  .day-summary-sub { font-size: 12px; color: var(--text-muted); }
+
+  /* HABIT CARDS */
+  .habits-list { display: flex; flex-direction: column; gap: 10px; }
+  .habit-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .habit-card:active { transform: scale(0.98); }
+  .habit-card.done {
+    border-color: rgba(184,255,87,0.3);
+    background: rgba(184,255,87,0.06);
+  }
+  .habit-check {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    font-size: 13px;
+  }
+  .habit-card.done .habit-check {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0e0e0f;
+  }
+  .habit-emoji { font-size: 20px; flex-shrink: 0; }
+  .habit-info { flex: 1; min-width: 0; }
+  .habit-name { font-size: 15px; font-weight: 600; }
+  .habit-card.done .habit-name { color: var(--text-muted); text-decoration: line-through; }
+  .habit-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .habit-streak {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--warn);
+    display: flex; align-items: center; gap: 3px;
+    flex-shrink: 0;
+  }
+
+  /* STATS VIEW */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+  }
+  .stat-card.accent {
+    border-color: rgba(184,255,87,0.3);
+    background: rgba(184,255,87,0.06);
+  }
+  .stat-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-value { font-family: 'Space Mono', monospace; font-size: 28px; font-weight: 700; color: var(--accent); line-height: 1; }
+  .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  /* Per-habit stats */
+  .habit-stat-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .habit-stat-row:last-child { border-bottom: none; }
+  .habit-stat-emoji { font-size: 18px; flex-shrink: 0; }
+  .habit-stat-info { flex: 1; min-width: 0; }
+  .habit-stat-name { font-size: 14px; font-weight: 500; margin-bottom: 5px; }
+  .habit-stat-bar-bg { height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .habit-stat-bar-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.6s ease; }
+  .habit-stat-pct { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
+
+  /* CALENDAR GRID */
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+    margin-top: 20px;
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 5px;
+    margin-bottom: 20px;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    position: relative;
+    cursor: pointer;
+  }
+  .cal-day.today { border-color: var(--accent); color: var(--accent); }
+  .cal-day.future { opacity: 0.3; cursor: default; }
+  .cal-day-fill {
+    position: absolute;
+    inset: 0;
+    border-radius: 5px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .cal-day .day-num { position: relative; z-index: 1; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+  }
+  .empty-state .big { font-size: 36px; margin-bottom: 8px; }
+  .empty-state p { font-size: 14px; }
+
+  /* MOTIVATIONAL QUOTE */
+  .quote-bar {
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px;
+    border-radius: 0 10px 10px 0;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--text-mid);
+    font-style: italic;
+  }
+
+  /* DIARY VIEW */
+  .diary-textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text);
+    outline: none;
+    resize: none;
+    min-height: 140px;
+    transition: border-color 0.2s;
+    margin-bottom: 10px;
+  }
+  .diary-textarea:focus { border-color: rgba(184,255,87,0.4); }
+  .diary-textarea::placeholder { color: var(--text-muted); }
+  .diary-save-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  .diary-char-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .diary-save-btn {
+    background: var(--accent);
+    color: #0e0e0f;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 20px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .diary-save-btn:hover { opacity: 0.85; }
+
+  .diary-feed-title {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+  }
+  .diary-entry-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+  .diary-entry-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    gap: 8px;
+  }
+  .diary-entry-datetime {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+  }
+  .diary-entry-delete {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.15s;
+    flex-shrink: 0;
+    padding: 0;
+    line-height: 1;
+  }
+  .diary-entry-delete:hover { opacity: 1; color: var(--danger); }
+  .diary-entry-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-mid);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .diary-entry-text.collapsed {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .diary-expand-btn {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 6px 0 0;
+    display: block;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .diary-empty {
+    text-align: center;
+    padding: 32px 20px;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  .diary-empty .big { font-size: 32px; margin-bottom: 8px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--accent);
+    color: #0e0e0f;
+    padding: 10px 20px;
+    border-radius: 99px;
+    font-weight: 600;
+    font-size: 14px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 999;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="header-label">30-Day Challenge</div>
+      <div class="header-title" id="headerTitle">Sei al Giorno 1</div>
+    </div>
+    <div class="day-badge" id="dayBadge">DAY 1</div>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="challengeProgress" style="width:0%"></div>
+    </div>
+    <div class="progress-label" id="challengeProgressLabel">0 / 30</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('today')">Oggi</button>
+  <button class="tab" onclick="switchTab('stats')">Statistiche</button>
+  <button class="tab" onclick="switchTab('calendar')">Calendario</button>
+  <button class="tab" onclick="switchTab('diary')">Diario</button>
+</div>
+
+<!-- TODAY -->
+<div class="view active" id="view-today">
+  <div class="date-row">
+    <div class="date-nav">
+      <button class="nav-btn" onclick="changeDay(-1)">‹</button>
+      <div class="date-display" id="dateDisplay">—</div>
+      <button class="nav-btn" onclick="changeDay(1)">›</button>
+    </div>
+    <button class="today-btn" onclick="goToday()">Oggi</button>
+  </div>
+
+  <div class="quote-bar" id="quoteBar"></div>
+
+  <div class="day-summary">
+    <div class="ring-wrap">
+      <svg width="60" height="60" viewBox="0 0 60 60">
+        <circle class="ring-bg" cx="30" cy="30" r="27"/>
+        <circle class="ring-fg" id="ringFg" cx="30" cy="30" r="27"
+          stroke-dasharray="169.6" stroke-dashoffset="169.6"/>
+      </svg>
+      <div class="ring-label" id="ringLabel">0/7</div>
+    </div>
+    <div class="day-summary-text">
+      <div class="day-summary-title" id="summaryTitle">Inizia la giornata 💪</div>
+      <div class="day-summary-sub" id="summarySub">Spunta ogni obiettivo completato</div>
+    </div>
+  </div>
+
+  <div class="habits-list" id="habitsList"></div>
+</div>
+
+<!-- STATS -->
+<div class="view" id="view-stats">
+  <div class="stats-grid">
+    <div class="stat-card accent">
+      <div class="stat-label">Streak attuale</div>
+      <div class="stat-value" id="statStreak">0</div>
+      <div class="stat-sub">giorni consecutivi</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">% totale</div>
+      <div class="stat-value" id="statTotal">0%</div>
+      <div class="stat-sub">obiettivi completati</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Giorni perfetti</div>
+      <div class="stat-value" id="statPerfect">0</div>
+      <div class="stat-sub">tutti completati</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Miglior streak</div>
+      <div class="stat-value" id="statBestStreak">0</div>
+      <div class="stat-sub">giorni di fila</div>
+    </div>
+  </div>
+
+  <div class="section-title">Per obiettivo</div>
+  <div id="habitStatsList"></div>
+</div>
+
+<!-- CALENDAR -->
+<div class="view" id="view-calendar">
+  <div class="section-title">30 giorni di sfida</div>
+  <div class="cal-grid" id="calGrid"></div>
+
+  <div class="section-title">Legenda</div>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text-muted);">
+    <span>⬜ Non ancora</span>
+    <span style="color:var(--accent)">🟩 Completato parzialmente</span>
+    <span style="color:var(--text)">✅ Giorno perfetto</span>
+  </div>
+</div>
+
+<!-- DIARY -->
+<div class="view" id="view-diary">
+  <textarea class="diary-textarea" id="diaryTextarea" placeholder="Scrivi qualcosa… una cosa imparata oggi, una citazione, un pensiero. Solo per te." maxlength="2000"></textarea>
+  <div class="diary-save-row">
+    <div class="diary-char-count"><span id="diaryCharCount">0</span> / 2000</div>
+    <button class="diary-save-btn" onclick="saveDiaryEntry()">Salva</button>
+  </div>
+
+  <div class="diary-feed-title">Tutte le note</div>
+  <div id="diaryFeed"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const HABITS = [
+  { id: 'esercizio', emoji: '🏋️', name: 'Esercizio', desc: 'Allenamento o attività fisica' },
+  { id: 'skincare', emoji: '✨', name: 'Skin Care', desc: 'Routine mattina e/o sera' },
+  { id: 'vinted', emoji: '👟', name: 'Pubblica su Vinted', desc: 'Almeno 1 articolo pubblicato' },
+  { id: 'ebay', emoji: '📦', name: 'Pubblica su eBay', desc: 'Almeno 1 listing su eBay' },
+  { id: 'produttivo', emoji: '⚡', name: '2 ore produttive', desc: 'Focus totale, no distrazioni' },
+  { id: 'read', emoji: '📖', name: 'Leggi / Impara', desc: 'Almeno 15 min di lettura o studio' },
+  { id: 'nosocial', emoji: '🔕', name: 'Social con scopo', desc: 'Niente scroll senza motivo' },
+];
+
+const QUOTES = [
+  "La costanza batte il talento quando il talento non è costante.",
+  "Non cercare la perfezione. Cerca il progresso.",
+  "Ogni giorno spuntato è un mattone del tuo futuro.",
+  "La disciplina è scegliere tra ciò che vuoi ora e ciò che vuoi di più.",
+  "Inizia. Il resto viene da sé.",
+  "Un giorno alla volta. Un obiettivo alla volta.",
+  "Chi si allena anche quando non ha voglia, vince.",
+];
+
+const STORAGE_KEY = '30day_challenge_v2';
+let state = {};
+let startDate = null;
+let viewingDay = 0; // offset from today
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      state = parsed.data || {};
+      startDate = parsed.startDate ? new Date(parsed.startDate) : null;
+    }
+  } catch(e) {}
+  if (!startDate) {
+    startDate = new Date();
+    startDate.setHours(0,0,0,0);
+    saveState();
+  }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ startDate: startDate.toISOString(), data: state }));
+}
+
+function dateKey(date) {
+  return date.toISOString().split('T')[0];
+}
+
+function getDayNumber(date) {
+  const d = new Date(date); d.setHours(0,0,0,0);
+  const s = new Date(startDate); s.setHours(0,0,0,0);
+  return Math.floor((d - s) / 86400000) + 1;
+}
+
+function getViewingDate() {
+  const d = new Date();
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + viewingDay);
+  return d;
+}
+
+function isFuture(date) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  return date > today;
+}
+
+function formatDate(date) {
+  return date.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+
+function toggleHabit(habitId) {
+  const date = getViewingDate();
+  if (isFuture(date)) return;
+  const key = dateKey(date);
+  if (!state[key]) state[key] = {};
+  state[key][habitId] = !state[key][habitId];
+  saveState();
+  renderToday();
+  renderStats();
+  renderCalendar();
+
+  const done = state[key][habitId];
+  if (done) {
+    const habit = HABITS.find(h => h.id === habitId);
+    const completed = HABITS.filter(h => state[key]?.[h.id]).length;
+    if (completed === HABITS.length) {
+      showToast('🔥 Giorno perfetto! Tutti completati!');
+    } else {
+      showToast(habit.emoji + ' ' + habit.name + ' ✓');
+    }
+  }
+}
+
+function renderToday() {
+  const date = getViewingDate();
+  const key = dateKey(date);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const isToday = date.getTime() === today.getTime();
+  const dayNum = getDayNumber(date);
+
+  // Date nav
+  document.getElementById('dateDisplay').textContent = formatDate(date);
+
+  // Quote (changes daily)
+  const qIdx = (dayNum - 1 + QUOTES.length) % QUOTES.length;
+  document.getElementById('quoteBar').textContent = '« ' + QUOTES[Math.max(0,qIdx)] + ' »';
+
+  // Ring + summary
+  const dayData = state[key] || {};
+  const doneCount = HABITS.filter(h => dayData[h.id]).length;
+  const pct = doneCount / HABITS.length;
+  const circumference = 169.6;
+  const offset = circumference * (1 - pct);
+  document.getElementById('ringFg').style.strokeDashoffset = offset;
+  document.getElementById('ringLabel').textContent = doneCount + '/' + HABITS.length;
+
+  if (doneCount === 0) {
+    document.getElementById('summaryTitle').textContent = isToday ? 'Inizia la giornata 💪' : 'Nessun obiettivo completato';
+    document.getElementById('summarySub').textContent = 'Spunta ogni obiettivo completato';
+  } else if (doneCount === HABITS.length) {
+    document.getElementById('summaryTitle').textContent = '🔥 Giorno perfetto!';
+    document.getElementById('summarySub').textContent = 'Hai completato tutto. Sei una macchina.';
+  } else {
+    document.getElementById('summaryTitle').textContent = 'Avanti! ' + (HABITS.length - doneCount) + ' rimasti';
+    document.getElementById('summarySub').textContent = doneCount + ' su ' + HABITS.length + ' completati oggi';
+  }
+
+  // Header
+  document.getElementById('dayBadge').textContent = 'DAY ' + Math.max(1, Math.min(30, dayNum));
+  if (dayNum <= 30) {
+    document.getElementById('headerTitle').textContent = 'Sei al Giorno ' + Math.max(1, dayNum);
+  } else {
+    document.getElementById('headerTitle').textContent = 'Sfida completata! 🏆';
+  }
+
+  // Challenge progress
+  const today2 = new Date(); today2.setHours(0,0,0,0);
+  const elapsed = Math.min(30, Math.max(1, getDayNumber(today2)));
+  const pctChallenge = (elapsed / 30) * 100;
+  document.getElementById('challengeProgress').style.width = pctChallenge + '%';
+  document.getElementById('challengeProgressLabel').textContent = elapsed + ' / 30';
+
+  // Habits list
+  const list = document.getElementById('habitsList');
+  if (isFuture(date)) {
+    list.innerHTML = '<div class="empty-state"><div class="big">🔒</div><p>Non puoi modificare giorni futuri</p></div>';
+    return;
+  }
+
+  // Calculate streaks per habit
+  const streaks = {};
+  HABITS.forEach(h => {
+    let streak = 0;
+    let checkDate = new Date(today);
+    while (true) {
+      const k = dateKey(checkDate);
+      if (state[k]?.[h.id]) { streak++; checkDate.setDate(checkDate.getDate() - 1); }
+      else break;
+    }
+    streaks[h.id] = streak;
+  });
+
+  list.innerHTML = HABITS.map(h => {
+    const done = !!dayData[h.id];
+    const streak = streaks[h.id];
+    return `<div class="habit-card ${done ? 'done' : ''}" onclick="toggleHabit('${h.id}')">
+      <div class="habit-check">${done ? '✓' : ''}</div>
+      <div class="habit-emoji">${h.emoji}</div>
+      <div class="habit-info">
+        <div class="habit-name">${h.name}</div>
+        <div class="habit-desc">${h.desc}</div>
+      </div>
+      ${streak >= 2 ? `<div class="habit-streak">🔥 ${streak}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderStats() {
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  // Streak
+  let streak = 0;
+  let checkDate = new Date(today);
+  while (true) {
+    const k = dateKey(checkDate);
+    const dayData = state[k] || {};
+    const doneCount = HABITS.filter(h => dayData[h.id]).length;
+    if (doneCount > 0) { streak++; checkDate.setDate(checkDate.getDate() - 1); }
+    else break;
+  }
+
+  // Best streak
+  let bestStreak = 0, cur = 0;
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + i);
+    if (d > today) break;
+    const k = dateKey(d);
+    const doneCount = HABITS.filter(h => state[k]?.[h.id]).length;
+    if (doneCount > 0) { cur++; bestStreak = Math.max(bestStreak, cur); }
+    else cur = 0;
+  }
+
+  // Total %
+  let totalPossible = 0, totalDone = 0, perfectDays = 0;
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + i);
+    if (d > today) break;
+    totalPossible += HABITS.length;
+    const dayData = state[dateKey(d)] || {};
+    const done = HABITS.filter(h => dayData[h.id]).length;
+    totalDone += done;
+    if (done === HABITS.length) perfectDays++;
+  }
+  const pct = totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0;
+
+  document.getElementById('statStreak').textContent = streak;
+  document.getElementById('statTotal').textContent = pct + '%';
+  document.getElementById('statPerfect').textContent = perfectDays;
+  document.getElementById('statBestStreak').textContent = bestStreak;
+
+  // Per habit
+  const list = document.getElementById('habitStatsList');
+  const daysElapsed = Math.max(1, Math.min(30, getDayNumber(today)));
+  list.innerHTML = HABITS.map(h => {
+    let count = 0;
+    for (let i = 0; i < daysElapsed; i++) {
+      const d = new Date(startDate); d.setDate(d.getDate() + i);
+      if (d > today) break;
+      if (state[dateKey(d)]?.[h.id]) count++;
+    }
+    const pctH = Math.round((count / daysElapsed) * 100);
+    return `<div class="habit-stat-row">
+      <div class="habit-stat-emoji">${h.emoji}</div>
+      <div class="habit-stat-info">
+        <div class="habit-stat-name">${h.name}</div>
+        <div class="habit-stat-bar-bg">
+          <div class="habit-stat-bar-fill" style="width:${pctH}%"></div>
+        </div>
+      </div>
+      <div class="habit-stat-pct">${pctH}%</div>
+    </div>`;
+  }).join('');
+}
+
+function renderCalendar() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + i);
+    const future = d > today;
+    const isToday = d.getTime() === today.getTime();
+    const key = dateKey(d);
+    const dayData = state[key] || {};
+    const doneCount = future ? 0 : HABITS.filter(h => dayData[h.id]).length;
+    const pct = doneCount / HABITS.length;
+
+    const el = document.createElement('div');
+    el.className = 'cal-day' + (isToday ? ' today' : '') + (future ? ' future' : '');
+    el.title = 'Giorno ' + (i+1) + ': ' + doneCount + '/' + HABITS.length;
+
+    const fill = document.createElement('div');
+    fill.className = 'cal-day-fill';
+    if (!future && doneCount > 0) {
+      fill.style.opacity = 0.15 + (pct * 0.7);
+    }
+
+    const label = document.createElement('span');
+    label.className = 'day-num';
+    if (!future && doneCount === HABITS.length) label.textContent = '✓';
+    else label.textContent = i + 1;
+
+    el.appendChild(fill);
+    el.appendChild(label);
+    el.onclick = () => {
+      if (!future) {
+        const offset = Math.round((d - today) / 86400000);
+        viewingDay = offset;
+        switchTab('today');
+      }
+    };
+    grid.appendChild(el);
+  }
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const tabs = ['today', 'stats', 'calendar', 'diary'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + tab).classList.add('active');
+  if (tab === 'stats') renderStats();
+  if (tab === 'calendar') renderCalendar();
+  if (tab === 'diary') renderDiary();
+}
+
+function changeDay(dir) {
+  const newDay = viewingDay + dir;
+  const d = new Date(); d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + newDay);
+  const dayNum = getDayNumber(d);
+  if (dayNum < 1 || dayNum > 30) return;
+  viewingDay = newDay;
+  renderToday();
+}
+
+function goToday() {
+  viewingDay = 0;
+  renderToday();
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ---- DIARY ----
+// Format: array of { id, text, ts } sorted newest-first
+const DIARY_KEY = '30day_diary_v2';
+let diaryEntries = [];
+
+function loadDiary() {
+  try {
+    const raw = localStorage.getItem(DIARY_KEY);
+    if (raw) diaryEntries = JSON.parse(raw);
+  } catch(e) { diaryEntries = []; }
+}
+
+function saveDiaryStorage() {
+  localStorage.setItem(DIARY_KEY, JSON.stringify(diaryEntries));
+}
+
+function renderDiary() {
+  updateDiaryCharCount();
+  renderDiaryFeed();
+}
+
+function updateDiaryCharCount() {
+  const len = document.getElementById('diaryTextarea').value.length;
+  document.getElementById('diaryCharCount').textContent = len;
+}
+
+function saveDiaryEntry() {
+  const text = document.getElementById('diaryTextarea').value.trim();
+  if (!text) { showToast('⚠️ Scrivi qualcosa prima di salvare'); return; }
+  const entry = {
+    id: Date.now().toString(),
+    text,
+    ts: new Date().toISOString()
+  };
+  diaryEntries.unshift(entry); // newest first
+  saveDiaryStorage();
+  document.getElementById('diaryTextarea').value = '';
+  updateDiaryCharCount();
+  renderDiaryFeed();
+  showToast('✏️ Nota salvata');
+}
+
+function deleteDiaryEntry(id) {
+  diaryEntries = diaryEntries.filter(e => e.id !== id);
+  saveDiaryStorage();
+  renderDiaryFeed();
+  showToast('Nota eliminata');
+}
+
+function renderDiaryFeed() {
+  const feed = document.getElementById('diaryFeed');
+  if (diaryEntries.length === 0) {
+    feed.innerHTML = '<div class="diary-empty"><div class="big">📝</div>Nessuna nota ancora.<br>Scrivi qualcosa e salvala!</div>';
+    return;
+  }
+  feed.innerHTML = diaryEntries.map(e => {
+    const d = new Date(e.ts);
+    const dateStr = d.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    const timeStr = d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    const long = e.text.length > 200;
+    const uid = 'dt-' + e.id;
+    return `<div class="diary-entry-card">
+      <div class="diary-entry-top">
+        <div class="diary-entry-datetime">${dateStr} · ${timeStr}</div>
+        <button class="diary-entry-delete" onclick="deleteDiaryEntry('${e.id}')" title="Elimina">✕</button>
+      </div>
+      <div class="diary-entry-text${long ? ' collapsed' : ''}" id="${uid}">${escHtml(e.text)}</div>
+      ${long ? `<button class="diary-expand-btn" onclick="toggleDiaryExpand('${uid}', this)">Leggi tutto ↓</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function toggleDiaryExpand(uid, btn) {
+  const el = document.getElementById(uid);
+  const collapsed = el.classList.toggle('collapsed');
+  btn.textContent = collapsed ? 'Leggi tutto ↓' : 'Riduci ↑';
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('diaryTextarea').addEventListener('input', updateDiaryCharCount);
+});
+
+// ---- INIT ----
+loadState();
+loadDiary();
+renderToday();
+</script>
+</body>
+</html>
